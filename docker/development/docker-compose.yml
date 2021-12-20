@@ -1,0 +1,52 @@
+version: "2.1"
+networks:
+  django-network:
+    external: true
+services:
+  # ---------------------------------------------------------------------------
+  # container services
+  # ---------------------------------------------------------------------------
+  # to_do_ms
+  to_do_ms_dev:
+    image: diegoug/to_do_ms_dev
+    container_name: to_do_ms_dev
+    volumes:
+      - ../../services/to_do_ms:/opt/src
+      - ${LOCAL_SSH}/.ssh/id_rsa.pub:/tmp/authorized_keys:ro
+    environment:
+      - DEBUG=${DEBUG}
+      - TEMPLATE_DEBUG=${TEMPLATE_DEBUG}
+    ports:
+      - ${TO_DO_MS_PORT}:${TO_DO_MS_PORT}
+      - ${TO_DO_MS_SSH}:22
+    depends_on:
+      postgres_to_do_ms_dev:
+        condition: service_healthy  
+    networks:
+      django-network:
+        aliases:
+          - ${TO_DO_MS_HOST}
+  # ---------------------------------------------------------------------------
+  # container services
+  # ---------------------------------------------------------------------------
+  # postgres to_do ms
+  postgres_to_do_ms_dev:
+    image: postgres:14.1
+    container_name: postgres_to_do_dev
+    ports:
+      - ${POSTGRES_TO_DO_MS_PORT}:5432
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_TO_DO_MS_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_TO_DO_MS_USER}
+      - POSTGRES_DB=${POSTGRES_TO_DO_MS_DATABASE_NAME}
+    volumes:
+      - ${LOCAL_VAR}/lib/postgres_to_do_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_TO_DO_MS_USER} -d ${POSTGRES_TO_DO_MS_DATABASE_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      django-network:
+        aliases:
+          - ${POSTGRES_TO_DO_MS_HOST}
