@@ -83,6 +83,110 @@ class UserAuthenticationCase(TestCase):
         result = json.loads(response.content)
         self.assertIn('client_secret', result)
         self.assertIn('client_id', result)
+    
+    def test_oauth_token(self):
+        client = APIClient()
+
+        response = client.post(
+                reverse('user-signup'), {
+                'email': self.user['email'],
+                'password': self.user['password'],
+                'password_confirmation': self.user['password'],
+                'first_name': self.user['first_name'],
+                'last_name': self.user['last_name'],
+                'username': self.user['username']
+            },
+            format='multipart'
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response = client.post(
+                reverse('user-login'), {
+                'email': self.user['email'],
+                'password': self.user['password'],
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        result = json.loads(response.content)
+        client_secret = result['client_secret']
+        client_id = result['client_id']
+
+        response = client.post(
+                reverse('oauth2_provider:token'), {
+                'grant_type': 'password',
+                'client_id': client_id,
+                'client_secret': client_secret,
+                'username': self.user['email'],
+                'password': self.user['password'],
+            },
+            format='multipart'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        result = json.loads(response.content)
+        self.assertIn('access_token', result)
+        self.assertIn('refresh_token', result)
+    
+    def test_oauth_introspect(self):
+        client = APIClient()
+
+        response = client.post(
+                reverse('user-signup'), {
+                'email': self.user['email'],
+                'password': self.user['password'],
+                'password_confirmation': self.user['password'],
+                'first_name': self.user['first_name'],
+                'last_name': self.user['last_name'],
+                'username': self.user['username']
+            },
+            format='multipart'
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response = client.post(
+                reverse('user-login'), {
+                'email': self.user['email'],
+                'password': self.user['password'],
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        result = json.loads(response.content)
+        client_secret = result['client_secret']
+        client_id = result['client_id']
+
+        response = client.post(
+                reverse('oauth2_provider:token'), {
+                'grant_type': 'password',
+                'client_id': client_id,
+                'client_secret': client_secret,
+                'username': self.user['email'],
+                'password': self.user['password'],
+            },
+            format='multipart'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        result = json.loads(response.content)
+        access_token = result['access_token']
+
+        client.credentials(HTTP_AUTHORIZATION='Bearer ' + access_token)
+
+        response = client.post(
+                reverse('oauth2_provider:introspect'), {
+                'token': access_token,
+                'client_id': client_id
+            },
+            format='multipart'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        result = json.loads(response.content)
+        self.assertIn('active', result)
+        self.assertEqual(result['active'], True)
 
 class UserAPICase(TestCase):
     def setUp(self):
@@ -232,4 +336,4 @@ class UserAPICase(TestCase):
             reverse('user-detail', kwargs={'email': self.user['email']}), 
             format='multipart'
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
