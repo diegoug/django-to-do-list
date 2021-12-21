@@ -129,8 +129,8 @@ USE_L10N = False
 # Language
 LANGUAGE_CODE = 'en-us'
 LANGUAGES = (
-    ('en', _('English')),
-    ('es', _('Spanish')),
+    ('en', 'English'),
+    ('es', 'Spanish'),
 )
 
 # Define url folder language
