@@ -23,4 +23,5 @@ urlpatterns = [
     path('oauth/', 
         include('oauth2_provider.urls', namespace='oauth2_provider')),
     path('', include('user.urls')),
+    path('', include('to_do.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

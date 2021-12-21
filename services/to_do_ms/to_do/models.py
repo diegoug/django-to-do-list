@@ -1,3 +1,12 @@
 from django.db import models
 
-# Create your models here.
+
+class Task(models.Model):
+    user = models.ForeignKey(
+        'profiles.user', related_name='user', on_delete=models.CASCADE)
+    title = models.CharField(
+        "title", max_length=100)
+    description = models.TextField(
+        "description")
+    status = models.BooleanField(
+        'staff status', default=False)
