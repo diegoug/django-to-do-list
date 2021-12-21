@@ -18,4 +18,7 @@ from django.urls import path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-]
+    path('oauth/', 
+        include('oauth2_provider.urls', namespace='oauth2_provider')),
+    path('', include('user.urls')),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
