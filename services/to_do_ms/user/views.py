@@ -35,6 +35,8 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             return UserSignUpSerializer
         if self.action == 'login':
             return UserLoginSerializer
+        if self.action == 'update':
+            return UserUpdateModelSerializer
         return super(UserViewSet, self).get_serializer_class()
 
     @action(detail=False, methods=['post'])
