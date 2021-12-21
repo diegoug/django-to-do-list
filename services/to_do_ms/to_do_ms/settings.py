@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     # to do service apps
     'oauth2_provider',
     'rest_framework',
+    'profiles',
     'to_do'
 ]
 
@@ -73,6 +74,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'to_do_ms.wsgi.application'
 
+AUTH_USER_MODEL = 'profiles.User'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
